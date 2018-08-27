@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+	<class name="com.gr.qrapi.core.model.Url" table="urls">
+		<id column="id" name="id" type="java.lang.Integer">
+			<generator class="native" />
+		</id>
+
+		<property column="long_url" name="longURL" type="java.lang.String" />
+		<property column="short_url" name="shortURL"
+			type="java.lang.String" />
+		<property column="d_o_c" name="startingDate"
+			type="java.util.Date" />
+		<property column="d_o_e" name="expiryDate"
+			type="java.util.Date" />
+		<bag name="urlStatList" cascade="all" lazy="false">
+			<key column="url_ID" not-null="true" />
+			<one-to-many class="com.gr.qrapi.core.model.Url_Stats" />
+		</bag>
+	</class>
+</hibernate-mapping>

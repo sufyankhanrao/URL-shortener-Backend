@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+	<class name="com.gr.qrapi.core.model.Url_Stats" table="url_click_details">
+		<id column="id" name="id" type="java.lang.Integer">
+			<generator class="native" />
+		</id>
+		<property column="click_date" name="clickDate"
+			type="java.util.Date" />
+		<property column="browser" name="browser"
+			type="java.lang.String" />
+		<property column="platform" name="platform"
+			type="java.lang.String" />
+	</class>
+</hibernate-mapping>
