@@ -11,7 +11,7 @@ import com.gr.qrapi.ws.v1.Url_shortnerResource;
 /**
  * This is main configuration file for rest application using rest easy
  */
-@ApplicationPath("/api")
+@ApplicationPath("")
 public class Main extends Application {
 
 	private Set<Object> singletons = new HashSet<Object>();

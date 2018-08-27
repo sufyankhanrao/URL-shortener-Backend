@@ -33,7 +33,12 @@ public class GeneralService implements GeneralServiceLocal {
 
 	@Override
 	public Url getLongURL(String ShortURL) {
-		int urlID=Integer.parseInt(ShortURL.substring(ShortURL.lastIndexOf("r")+1),16);
+		int urlID=0;
+		try {
+			urlID=Integer.parseInt(ShortURL.substring(ShortURL.lastIndexOf("r")+1),16);
+		}catch(NumberFormatException ne) {
+			System.out.println("API Error!");
+		}
 		return UrlsDaoHibernateImpl.getDao().searchURLByID(urlID);
 	}
 

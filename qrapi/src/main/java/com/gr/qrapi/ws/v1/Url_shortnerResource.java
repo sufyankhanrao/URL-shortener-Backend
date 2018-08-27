@@ -11,6 +11,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -25,7 +26,7 @@ import com.gr.qrapi.ws.skeleton.Url_Details;
 
 import eu.bitwalker.useragentutils.UserAgent;
 
-@Path("/v1/url")
+@Path("")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class Url_shortnerResource {
@@ -35,7 +36,7 @@ public class Url_shortnerResource {
 	UriInfo info;
 
 	@POST
-	@Path("/add")
+	@Path("api/add")
 	public Url addURL(Url url) {
 		LocalDate today=LocalDate.now();
 		url.setStartingDate(Date.valueOf(today));
@@ -44,28 +45,26 @@ public class Url_shortnerResource {
 	}
 
 	@GET
-	@Path("/details")
+	@Path("api/details")
 	public Url_Details searchURLByID(@Context UriInfo info) {
 		int urlID = Integer.parseInt(info.getQueryParameters().getFirst("urlID"));
 		return genericService.getURLDetails(urlID);
 	}
 
 	@GET
-	@Path("/get/all")
+	@Path("api/get/all")
 	public List<Url> getAllURLs() {
 		return genericService.getAllURLs();
 	}
 	
 	@SuppressWarnings("unused")
 	@GET
-	@Path("/redirect")
-	public Response redirectToLongUrl(@Context UriInfo info,
+	@Path("/{shortURL}")
+	public Response redirectToLongUrl(@PathParam("shortURL") String shortUrl,
 			@HeaderParam("user-agent") String userAgentString) {
-		String shortUrl = info.getQueryParameters().getFirst("shortURL");
 		UserAgent userAgent = UserAgent.parseUserAgentString(userAgentString);
 		String browser = userAgent.getBrowser().getName();
 		String platform = userAgent.getOperatingSystem().getName();
-		
 		Url myURL=genericService.getLongURL(shortUrl);
 		URI uriLong=null;
 		Response response=null;
@@ -99,7 +98,7 @@ public class Url_shortnerResource {
 	}
 	
 	@GET
-	@Path("/get/stats")
+	@Path("api/get/stats")
 	public List<Click_Stat_Model> getURLClickStats(@Context UriInfo info) {
 		int urlID = Integer.parseInt(info.getQueryParameters().getFirst("urlID"));
 		return genericService.getClickStats(urlID);

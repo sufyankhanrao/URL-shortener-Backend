@@ -1,6 +1,5 @@
 package com.gr.qrapi.core.dao;
 
-import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,6 +7,7 @@ import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.transform.Transformers;
+
 import com.gr.common.dao.AbstractHibernateDao;
 import com.gr.common.dao.DaoException;
 import com.gr.common.dao.DaoManager;
@@ -43,30 +43,32 @@ public class UrlsDaoHibernateImpl extends AbstractHibernateDao<Url, Integer> imp
 		Session session = null;
 		Integer ID = null;
 		List<Url> urls = getAllURLs();
-		Url addedURL=null;
-		for (Url myUrl : urls) {
-			if (myUrl.getLongURL().equals(url.getLongURL())) {
-				return null;
-			}
-		}
-		try {
-			session = getSession();
-			session.beginTransaction();
-			ID = (Integer) session.save(url);
-			String enc_ID = generateShortenURL(ID);
-			updateShortenURL(enc_ID, session);
-			addedURL=(Url) session.get(Url.class,ID);
-			addedURL.setShortURL("gr-us/gr" + enc_ID);
-			session.getTransaction().commit();
-		} catch (Exception e) {
-			session.getTransaction().rollback();
-			e.printStackTrace();
-			return null;
-		} finally {
-			if (session != null)
-				if (session.isOpen()) {
-					session.close();
+		Url addedURL = null;
+		if (url.getLongURL().length() <= 2083) {
+			for (Url myUrl : urls) {
+				if (myUrl.getLongURL().equals(url.getLongURL())) {
+					return null;
 				}
+			}
+			try {
+				session = getSession();
+				session.beginTransaction();
+				ID = (Integer) session.save(url);
+				String enc_ID = generateShortenURL(ID);
+				updateShortenURL(enc_ID, session);
+				addedURL = (Url) session.get(Url.class, ID);
+				addedURL.setShortURL("http://localhost:8080/gr_us_gr" + enc_ID);
+				session.getTransaction().commit();
+			} catch (Exception e) {
+				session.getTransaction().rollback();
+				e.printStackTrace();
+				return null;
+			} finally {
+				if (session != null)
+					if (session.isOpen()) {
+						session.close();
+					}
+			}
 		}
 		return addedURL;
 	}
@@ -131,7 +133,7 @@ public class UrlsDaoHibernateImpl extends AbstractHibernateDao<Url, Integer> imp
 		return true;
 	}
 
-	@SuppressWarnings({ "unchecked"})
+	@SuppressWarnings({ "unchecked" })
 	@Override
 	public List<Click_Stat_Model> getClickStats(int urlID) {
 		List<Click_Stat_Model> clickStatList = new ArrayList<>();
@@ -139,42 +141,48 @@ public class UrlsDaoHibernateImpl extends AbstractHibernateDao<Url, Integer> imp
 		try {
 			session = getSession();
 			session.beginTransaction();
-			Query query = session.createQuery("select cast(year(clickDate) as string) as label, cast(Count(*) as int) as data from Url_Stats where url_ID = " + urlID + " group by year(clickDate)").setResultTransformer(
-					Transformers.aliasToBean(ListModel.class));
+			Query query = session.createQuery(
+					"select cast(year(clickDate) as string) as label, cast(Count(*) as int) as data from Url_Stats where url_ID = "
+							+ urlID + " group by year(clickDate)")
+					.setResultTransformer(Transformers.aliasToBean(ListModel.class));
 			List<ListModel> yearlyStats = (List<ListModel>) query.list();
 			if (yearlyStats == null) {
-					if (session.isOpen()) {
-						session.close();
-					}
+				if (session.isOpen()) {
+					session.close();
+				}
 				return null;
 			}
-			
+
 			clickStatList.add(populateStats(yearlyStats));
-			
-			query = session.createQuery("select cast(browser as string) as label, cast(Count(*) as int) as data from Url_Stats where url_ID = " + urlID + " group by browser").setResultTransformer(
-					Transformers.aliasToBean(ListModel.class));
+
+			query = session.createQuery(
+					"select cast(browser as string) as label, cast(Count(*) as int) as data from Url_Stats where url_ID = "
+							+ urlID + " group by browser")
+					.setResultTransformer(Transformers.aliasToBean(ListModel.class));
 			List<ListModel> browserStats = (List<ListModel>) query.list();
 			if (browserStats == null) {
-					if (session.isOpen()) {
-						session.close();
-					}
+				if (session.isOpen()) {
+					session.close();
+				}
 				return null;
 			}
-			
+
 			clickStatList.add(populateStats(browserStats));
-			
-			query = session.createQuery("select cast(platform as string) as label, cast(Count(*) as int) as data from Url_Stats where url_ID = " + urlID + " group by platform").setResultTransformer(
-					Transformers.aliasToBean(ListModel.class));
+
+			query = session.createQuery(
+					"select cast(platform as string) as label, cast(Count(*) as int) as data from Url_Stats where url_ID = "
+							+ urlID + " group by platform")
+					.setResultTransformer(Transformers.aliasToBean(ListModel.class));
 			List<ListModel> platformStats = (List<ListModel>) query.list();
 			if (platformStats == null) {
-					if (session.isOpen()) {
-						session.close();
-					}
+				if (session.isOpen()) {
+					session.close();
+				}
 				return null;
 			}
-			
+
 			clickStatList.add(populateStats(platformStats));
-			
+
 			session.getTransaction().commit();
 		} catch (Exception hbe) {
 			session.getTransaction().rollback();
@@ -188,7 +196,7 @@ public class UrlsDaoHibernateImpl extends AbstractHibernateDao<Url, Integer> imp
 		}
 		return clickStatList;
 	}
-	
+
 	@Override
 	public Url_Details getURLDetails(int urlID) {
 		Session session = null;
@@ -203,7 +211,9 @@ public class UrlsDaoHibernateImpl extends AbstractHibernateDao<Url, Integer> imp
 				}
 				return null;
 			}
-			url_Details=new Url_Details(retrievedURL.getShortURL(),retrievedURL.getStartingDate().toString().split(" ")[0], retrievedURL.getLongURL(), retrievedURL.getUrlStatList().size());
+			url_Details = new Url_Details(retrievedURL.getShortURL(),
+					retrievedURL.getStartingDate().toString().split(" ")[0], retrievedURL.getLongURL(),
+					retrievedURL.getUrlStatList().size());
 			session.getTransaction().commit();
 		} catch (Exception e) {
 			session.getTransaction().rollback();
@@ -215,28 +225,27 @@ public class UrlsDaoHibernateImpl extends AbstractHibernateDao<Url, Integer> imp
 		}
 		return url_Details;
 	}
-	
+
 	private String generateShortenURL(Integer ID) {
 		return Integer.toHexString(ID);
 	}
 
 	private void updateShortenURL(String ID, Session session) {
-		String shortURL = "gr-us/gr" + ID;
+		String shortURL = "http://localhost:8080/gr_us_gr" + ID;
 		Query query = session
 				.createQuery("update Url set short_url = :shortUrl where Id = " + Integer.parseInt(ID, 16));
 		query.setParameter("shortUrl", shortURL);
 		query.executeUpdate();
 	}
-	
+
 	private Click_Stat_Model populateStats(List<ListModel> Stats) {
 		Click_Stat_Model click_Stats = new Click_Stat_Model();
-		for(ListModel model:Stats) {
+		for (ListModel model : Stats) {
 			click_Stats.getLabelList().add(model.getLabel());
-			click_Stats.getDataList().add((Integer)model.getData());
+			click_Stats.getDataList().add((Integer) model.getData());
 		}
 		return click_Stats;
-		
+
 	}
-	
 
 }
